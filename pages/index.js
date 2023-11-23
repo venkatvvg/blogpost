@@ -1,37 +1,76 @@
-// components/Header.js
+// pages/index.js
 import Link from 'next/link';
-import { useState } from 'react';
+import { getPosts } from '../utils/mdx-utils';
+import Footer from '../components/Footer';
+import Header from '../components/Header';
+import Layout, { GradientBackground } from '../components/Layout';
+import ArrowIcon from '../components/ArrowIcon';
+import { getGlobalData } from '../utils/global-data';
+import SEO from '../components/SEO';
 
-export default function Header({ name, onSearch }) {
-  const [searchTerm, setSearchTerm] = useState('');
+export default function Index({ posts, globalData }) {
+  const [filteredPosts, setFilteredPosts] = React.useState(posts);
 
-  const handleSearch = () => {
-    onSearch(searchTerm);
+  const handleSearch = (searchTerm) => {
+    const filtered = posts.filter((post) =>
+      post.data.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredPosts(filtered);
   };
 
   return (
-    <header className="pt-20 pb-12">
-      <div className="w-12 h-12 rounded-full block mx-auto mb-4 bg-gradient-conic from-gradient-3 to-gradient-4" />
-      <p className="text-2xl dark:text-white text-center">
-        <Link href="/">
-          <a>{name}</a>
-        </Link>
-      </p>
-      <div className="flex justify-center mt-4">
-        <input
-          type="text"
-          placeholder="Search..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="mr-2 px-2 py-1 border border-gray-300"
-        />
-        <button
-          onClick={handleSearch}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Search
-        </button>
-      </div>
-    </header>
+    <Layout>
+      <SEO title={globalData.name} description={globalData.blogTitle} />
+      <Header name={globalData.name} onSearch={handleSearch} />
+      <main className="w-full">
+        <h1 className="text-3xl lg:text-5xl text-center mb-12">
+          {globalData.blogTitle}
+        </h1>
+        <ul className="w-full">
+          {filteredPosts.map((post) => (
+            <li
+              key={post.filePath}
+              className="md:first:rounded-t-lg md:last:rounded-b-lg backdrop-blur-lg bg-white dark:bg-black dark:bg-opacity-30 bg-opacity-10 hover:bg-opacity-20 dark:hover:bg-opacity-50 transition border border-gray-800 dark:border-white border-opacity-10 dark:border-opacity-10 border-b-0 last:border-b hover:border-b hovered-sibling:border-t-0"
+            >
+              <Link
+                as={`/posts/${post.filePath.replace(/\.mdx?$/, '')}`}
+                href={`/posts/[slug]`}
+              >
+                <a className="py-6 lg:py-10 px-6 lg:px-16 block focus:outline-none focus:ring-4">
+                  {post.data.date && (
+                    <p className="uppercase mb-3 font-bold opacity-60">
+                      {post.data.date}
+                    </p>
+                  )}
+                  <h2 className="text-2xl md:text-3xl">{post.data.title}</h2>
+                  {post.data.description && (
+                    <p className="mt-3 text-lg opacity-60">
+                      {post.data.description}
+                    </p>
+                  )}
+                  <ArrowIcon className="mt-4" />
+                </a>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </main>
+      <Footer copyrightText={globalData.footerText} />
+      <GradientBackground
+        variant="large"
+        className="fixed top-20 opacity-40 dark:opacity-60"
+      />
+      <GradientBackground
+        variant="small"
+        className="absolute bottom-0 opacity-20 dark:opacity-10"
+      />
+    </Layout>
   );
+}
+
+export function getStaticProps() {
+  const posts = getPosts();
+  const globalData = getGlobalData();
+
+  return { props: { posts, globalData } };
 }

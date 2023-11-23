@@ -9,6 +9,13 @@ export default function Header({ name }) {
           <a>{name}</a>
         </Link>
       </p>
+      <div className="text-center mt-4">
+        <Link href="/">
+          <a className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            Go to Home
+          </a>
+        </Link>
+      </div>
     </header>
   );
 }
